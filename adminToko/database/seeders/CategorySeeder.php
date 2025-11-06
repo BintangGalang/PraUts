@@ -21,5 +21,7 @@ class CategorySeeder extends Seeder
         now()],
         ['category' => 'Olahraga', 'created_at' => now(), 'updated_at' => now()],
         ]);
+
+        
     }
 }

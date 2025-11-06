@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useProducts } from "../../utils/ProductContext";
 import toast from "react-hot-toast";
 import { useParams, useNavigate } from "react-router-dom";
+import apiClient from "../../utils/apiClient"; // ✅ Tambahan untuk ambil kategori dari backend
 
 /**
  * ProductEdit
@@ -17,15 +18,29 @@ export default function ProductEdit() {
     name: "",
     price: "",
     stock: "",
-    category_id: 1,
+    category_id: "",
     description: "",
     img: null,
   });
 
-  // State error validasi
+  // State kategori dan error
+  const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Ambil data produk berdasarkan ID saat komponen mount
+  // Ambil data kategori dari backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await apiClient.get("/categories");
+        setCategories(res.data.data || res.data); // tergantung struktur API-mu
+      } catch (err) {
+        toast.error("Gagal memuat kategori.");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Ambil data produk berdasarkan ID
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -35,10 +50,10 @@ export default function ProductEdit() {
           price: res.price || "",
           stock: res.stock || "",
           description: res.description || "",
-          category_id: res.category_id || 1,
+          category_id: res.category_id || "",
           img: res.img_url || null,
         });
-      } catch (err) {
+      } catch {
         toast.error("Gagal memuat data produk.");
       }
     };
@@ -99,16 +114,22 @@ export default function ProductEdit() {
         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name[0]}</p>}
       </div>
 
-      {/* Kategori ID */}
+      {/* Pilih Kategori */}
       <div className="flex flex-col">
-        <label className="block font-medium text-gray-600 mb-1">Kategori ID</label>
-        <input
+        <label className="text-sm font-medium text-gray-600 mb-1">Pilih Kategori</label>
+        <select
           name="category_id"
-          placeholder="ID Kategori"
           onChange={handleChange}
           value={formData.category_id}
-          className={`border rounded-md p-2 w-full ${errors.category_id ? "border-red-500" : ""}`}
-        />
+          className="border rounded-md p-2 w-full"
+        >
+          <option value="">-- Pilih Kategori --</option>
+          {categories.map((cat) => (
+            <option key={cat.category_id} value={cat.category_id}>
+              {cat.category}
+            </option>
+          ))}
+        </select>
         {errors.category_id && <p className="text-red-500 text-sm mt-1">{errors.category_id[0]}</p>}
       </div>
 
@@ -155,24 +176,21 @@ export default function ProductEdit() {
 
       {/* Preview Gambar */}
       {formData.img && (
-  <div className="flex flex-col">
-    <label className="text-sm font-medium text-gray-600 mb-1">
-      Preview Gambar
-    </label>
-    <img
-      src={
-        typeof formData.img === "string"
-          ? formData.img.startsWith("http")
-            ? formData.img
-            : `http://127.0.0.1:8000/storage/${formData.img}`
-          : URL.createObjectURL(formData.img)
-      }
-      alt="Preview"
-      className="mt-2 w-32 h-32 object-cover rounded"
-    />
-  </div>
-)}
-
+        <div className="flex flex-col">
+          <label className="text-sm font-medium text-gray-600 mb-1">Preview Gambar</label>
+          <img
+            src={
+              typeof formData.img === "string"
+                ? formData.img.startsWith("http")
+                  ? formData.img
+                  : `http://127.0.0.1:8000/storage/${formData.img}`
+                : URL.createObjectURL(formData.img)
+            }
+            alt="Preview"
+            className="mt-2 w-32 h-32 object-cover rounded"
+          />
+        </div>
+      )}
 
       {/* Upload Gambar */}
       <div className="flex flex-col">

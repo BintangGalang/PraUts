@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const token = "1|BhBaZjHJvgPjZR4C9YmuLqHgATTR1Eg1q3YlHaMNda0b4f9f";
+const token = "1|tGnLRuXbuoIJEiwueSizA95YT1xtkKO07Oy7E6RK831fbc5d";
 
 const apiClient = axios.create({
   baseURL: "http://127.0.0.1:8000/api",

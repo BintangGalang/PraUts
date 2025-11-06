@@ -4,6 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+
+Route::apiResource('categories', CategoryController::class);
+
 
 // 🔐 Auth routes (public)
 Route::post('/register', [AuthController::class, 'register']);

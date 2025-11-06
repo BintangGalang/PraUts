@@ -1,30 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProducts } from "../../utils/ProductContext";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../utils/apiClient"; // ✅ pastikan ada apiClient untuk request API
 
-/**
- * ProductForm
- * Form untuk menambahkan produk baru
- */
 export default function ProductForm() {
   const { addProduct } = useProducts();
   const navigate = useNavigate();
 
-  // State form data
+  // ✅ State untuk form
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     stock: "",
-    category_id: 1,
+    category_id: "",
     description: "",
     img: null,
   });
 
-  // State untuk menyimpan error validasi
+  // ✅ State kategori
+  const [categories, setCategories] = useState([]);
+
+  // ✅ State untuk error validasi
   const [errors, setErrors] = useState({});
 
-  // Menangani perubahan input
+  // ✅ Ambil kategori dari backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await apiClient.get("/categories");
+        setCategories(res.data.data || []);
+      } catch (error) {
+        toast.error("Gagal memuat kategori");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // ✅ Handle input
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData({
@@ -33,10 +46,11 @@ export default function ProductForm() {
     });
   };
 
-  // Menangani submit form
+  // ✅ Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) => data.append(key, value));
 
@@ -75,16 +89,25 @@ export default function ProductForm() {
         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name[0]}</p>}
       </div>
 
-      {/* Kategori ID */}
+      {/* ✅ Dropdown Kategori */}
       <div className="flex flex-col">
-        <label className="block font-medium text-gray-600 mb-1">Kategori ID</label>
-        <input
+        <label className="text-sm font-medium text-gray-600 mb-1">Pilih Kategori</label>
+        <select
           name="category_id"
-          placeholder="ID Kategori"
           onChange={handleChange}
+          value={formData.category_id}
           className={`border rounded-md p-2 w-full ${errors.category_id ? "border-red-500" : ""}`}
-        />
-        {errors.category_id && <p className="text-red-500 text-sm mt-1">{errors.category_id[0]}</p>}
+        >
+          <option value="">-- Pilih Kategori --</option>
+          {categories.map((cat) => (
+            <option key={cat.category_id} value={cat.category_id}>
+              {cat.name || cat.category}
+            </option>
+          ))}
+        </select>
+        {errors.category_id && (
+          <p className="text-red-500 text-sm mt-1">{errors.category_id[0]}</p>
+        )}
       </div>
 
       {/* Harga */}
@@ -141,7 +164,7 @@ export default function ProductForm() {
         {errors.img && <p className="text-red-500 text-sm mt-1">{errors.img[0]}</p>}
       </div>
 
-      {/* Submit */}
+      {/* Tombol Submit */}
       <button
         type="submit"
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200"
