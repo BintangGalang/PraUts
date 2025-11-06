@@ -154,12 +154,25 @@ export default function ProductEdit() {
       </div>
 
       {/* Preview Gambar */}
-      {formData.img && typeof formData.img === "string" && (
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-600 mb-1">Preview Gambar</label>
-          <img src={formData.img} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
-        </div>
-      )}
+      {formData.img && (
+  <div className="flex flex-col">
+    <label className="text-sm font-medium text-gray-600 mb-1">
+      Preview Gambar
+    </label>
+    <img
+      src={
+        typeof formData.img === "string"
+          ? formData.img.startsWith("http")
+            ? formData.img
+            : `http://127.0.0.1:8000/storage/${formData.img}`
+          : URL.createObjectURL(formData.img)
+      }
+      alt="Preview"
+      className="mt-2 w-32 h-32 object-cover rounded"
+    />
+  </div>
+)}
+
 
       {/* Upload Gambar */}
       <div className="flex flex-col">

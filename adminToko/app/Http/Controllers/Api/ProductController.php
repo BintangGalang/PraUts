@@ -25,28 +25,33 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request
-        $request->validate([
-            'name'        => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,category_id',
-            'price'       => 'required|numeric',
-            'stock'       => 'required|integer',
-            'img'         => 'nullable|string',
-        ]);
+    $request->validate([
+        'name'        => 'required|string|max:150',
+        'description' => 'nullable|string',
+        'category_id' => 'required|exists:categories,category_id',
+        'price'       => 'required|numeric',
+        'stock'       => 'required|integer',
+        'img'         => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // Create the product
-        $product = Product::create([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'img'         => $request->img,
-            'slug'        => Str::slug($request->name), // Generate slug from name
-        ]);
+    $imgPath = null;
 
-        return new ProductResource($product);
+    if ($request->hasFile('img')) {
+        // simpan ke storage/app/public/products
+        $imgPath = $request->file('img')->store('products', 'public');
+    }
+
+    $product = Product::create([
+        'name'        => $request->name,
+        'description' => $request->description,
+        'category_id' => $request->category_id,
+        'price'       => $request->price,
+        'stock'       => $request->stock,
+        'img'         => $imgPath, // simpan path
+        'slug'        => Str::slug($request->name),
+    ]);
+
+    return new ProductResource($product);
     }
 
     /**
@@ -64,32 +69,36 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Find the product
-        $product = Product::findOrFail($id);
+    $product = Product::findOrFail($id);
 
-        // Validate the request
-        $request->validate([
-            'name'        => 'required|string|max:150',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,category_id',
-            'price'       => 'required|numeric',
-            'stock'       => 'required|integer',
-            'img'         => 'nullable|string',
-        ]);
+    $request->validate([
+        'name'        => 'required|string|max:150',
+        'description' => 'nullable|string',
+        'category_id' => 'required|exists:categories,category_id',
+        'price'       => 'required|numeric',
+        'stock'       => 'required|integer',
+        'img'         => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // Update the product
-        $product->update([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'category_id' => $request->category_id,
-            'price'       => $request->price,
-            'stock'       => $request->stock,
-            'img'         => $request->img,
-            'slug'        => Str::slug($request->name), // Generate slug from name
-        ]);
+    $imgPath = $product->img; // default tetap pakai gambar lama
 
-        return new ProductResource($product);
+    if ($request->hasFile('img')) {
+        $imgPath = $request->file('img')->store('products', 'public');
     }
+
+    $product->update([
+        'name'        => $request->name,
+        'description' => $request->description,
+        'category_id' => $request->category_id,
+        'price'       => $request->price,
+        'stock'       => $request->stock,
+        'img'         => $imgPath,
+        'slug'        => \Illuminate\Support\Str::slug($request->name),
+    ]);
+
+    return new ProductResource($product);
+    }
+
 
     /**
      * Remove the specified resource from storage.
