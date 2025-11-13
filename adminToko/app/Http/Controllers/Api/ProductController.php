@@ -13,12 +13,26 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Get all products with their category
-        $products = Product::with('category')->paginate(10);
-        return ProductResource::collection($products);
+    $query = Product::with('category');
+
+    // 🔍 Filter berdasarkan keyword
+    if ($request->has('search') && $request->search != '') {
+        $query->where('name', 'like', '%' . $request->search . '%');
     }
+
+    // 🏷 Filter berdasarkan kategori
+    if ($request->has('category') && $request->category != '') {
+        $query->where('category_id', $request->category);
+    }
+
+    // 📄 Pagination (default 10 item per halaman)
+    $products = $query->paginate(5);
+
+    return ProductResource::collection($products);
+    }
+
 
     /**
      * Store a newly created resource in storage.
