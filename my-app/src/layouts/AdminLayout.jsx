@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useState } from "react";
+import { useAuth } from "../utils/AuthContext";
 
 /**
  * AdminLayout
@@ -8,6 +9,10 @@ import { useState } from "react";
  */
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+   const { user } = useAuth();
+    if (!user || user.role !== 'admin') {
+        return <Navigate to="/login" />;
+    }
 
   return (
     <div className="flex h-screen bg-gray-100">
